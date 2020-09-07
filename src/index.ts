@@ -1,3 +1,7 @@
-import RNSerialPort from "./RNSerialPort";
+import SerialPort from "./SerialPort";
 
-export { RNSerialPort };
+export default { 
+    openPort(deviceId: string, baudRate: number = 9600) {
+        return new SerialPort(deviceId, baudRate);
+    }
+ };

@@ -1,7 +1,6 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.melihyarikkaya.rnserialport">
+          package="cn.genee.rn.serialport">
     <uses-feature android:name="android.hardware.usb.host"
         android:required="true"/>
 </manifest>
-  

@@ -2,7 +2,10 @@ def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
+def kotlinVersion = safeExtGet('kotlinVersion', '1.4.0')
+
 buildscript {
+
   // The Android Gradle plugin is only required when opening the android folder stand-alone.
   // This avoids unnecessary downloads and potential conflicts when the library is included as a
   // module dependency in an application project.
@@ -13,52 +16,52 @@ buildscript {
     }
 
     dependencies {
-      //noinspection GradleDependency
-      classpath("com.android.tools.build:gradle:3.6.3")
+      classpath("com.android.tools.build:gradle:3.6.0")
+      classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+  } else {
+    repositories {
+      jcenter()
+    }
+
+    dependencies {
+      classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
   }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 
 android {
-  compileSdkVersion safeExtGet('compileSdkVersion', 28)
-  buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
+    compileSdkVersion safeExtGet('compileSdkVersion', 28)
+    buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
 
-  defaultConfig {
-    minSdkVersion safeExtGet('minSdkVersion', 16)
-    targetSdkVersion safeExtGet('targetSdkVersion', 28)
-  }
+    defaultConfig {
+        minSdkVersion safeExtGet('minSdkVersion', 16)
+        targetSdkVersion safeExtGet('targetSdkVersion', 28)
+    }
 
-  lintOptions {
-    abortOnError false
-    warning 'InvalidPackage'
-  }
+    lintOptions {
+        abortOnError false
+    }
 
 }
 
 repositories {
-  google()
-  jcenter()
-  mavenCentral()
-  maven { url "https://jitpack.io" }
-  maven {
-    // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-    url "$rootDir/../node_modules/react-native/android"
-  }
+	mavenCentral()
+	google()
+	jcenter()
+	maven {
+		// All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+		url "$rootDir/../node_modules/react-native/android"
+		// To test url "$rootDir/../example/node_modules/react-native/android"
+	}
 }
 
 dependencies {
-  //noinspection GradleDynamicVersion
-  implementation 'com.facebook.react:react-native:+'  // From node_modules
-  // implementation "androidx.exifinterface:exifinterface:1.0.0"
-  // implementation "androidx.annotation:annotation:1.0.0"
-  // implementation "androidx.legacy:legacy-support-v4:1.0.0"
-
-  implementation 'com.github.licheedev.Android-SerialPort-API:serialport:1.0.1'
-  implementation 'org.droidplanner.android:usb-serial-android:0.1.0'
-    implementation "androidx.core:core-ktx:+"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.facebook.react:react-native:+'  // From node_modules
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation 'com.github.licheedev.Android-SerialPort-API:serialport:1.0.1'
+    implementation 'org.droidplanner.android:usb-serial-android:0.1.0'
 }
