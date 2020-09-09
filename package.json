@@ -1,8 +1,8 @@
 {
-  "name": "react-native-serialport",
+  "name": "@genee/react-native-serialport",
   "version": "1.0.0",
   "main": "dist/index",
-  "private": "true",
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-typescript": "^5.0.2",
     "@types/react-native": "^0.63.15",
