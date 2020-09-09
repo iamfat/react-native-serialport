@@ -25,11 +25,11 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
             val manager = getUSBManager()
             for (device in manager.deviceList.values) {
                 if (device.deviceId == usbDeviceId) {
-                    Log.d(LOG_TAG, "found USB device $usbDeviceId")
+                    Log.d(RNSerialPort.LOG_TAG, "found USB device $usbDeviceId")
                     probeUSBDevice(manager, device)?.let {
                         if (it.size > 0) {
                             it[0].apply {
-                                Log.d(LOG_TAG, "found usbDriver $this")
+                                Log.d(RNSerialPort.LOG_TAG, "found usbDriver $this")
                                 setParameters(baudRate, 8, 1, 0)
                                 open()
                                 usbDriver = this
@@ -54,7 +54,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
         try {
             usbDriver?.close()
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "SerialPort closeDriver: ${e.message}")
+            Log.e(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).closeDriver: ${e.message}")
         } finally {
             usbDriver = null
         }
@@ -63,9 +63,9 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
     override fun write(data: ByteArray) {
         try {
             usbDriver?.write(data, READ_WAIT_MILLIS)
-            Log.d(LOG_TAG, "SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
         } catch (e: Exception) {
-            Log.d(LOG_TAG, "SerialPort.usb($usbDeviceId).write: error=${e.message}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: error=${e.message}")
             closeDriver()
         }
     }
@@ -76,7 +76,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
         if (length !== null && length > 0) {
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
-            Log.d(LOG_TAG, "SerialPort.usb($usbDeviceId).read: ${data.toHexString()}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
         } else {
@@ -86,7 +86,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
 
     fun probeUSBDevice(usbManager: UsbManager, usbDevice: UsbDevice): List<UsbSerialDriver>? {
         if (!usbManager.hasPermission(usbDevice)) {
-            Log.d(LOG_TAG, "usbManager.hasNoPermission $usbDevice")
+            Log.d(RNSerialPort.LOG_TAG, "usbManager.hasNoPermission $usbDevice")
             val intent = PendingIntent.getBroadcast(
                     context, 0,
                     Intent(ACTION_USB_PERMISSION), 0
@@ -94,7 +94,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
             usbManager.requestPermission(usbDevice, intent)
             return null
         }
-        Log.d(LOG_TAG, "usbManager.hasPermission $usbDevice")
+        Log.d(RNSerialPort.LOG_TAG, "usbManager.hasPermission $usbDevice")
         val drivers = UsbSerialProber.probeSingleDevice(usbManager, usbDevice)
         if (drivers != null && drivers.size > 0) return drivers
 
@@ -129,7 +129,6 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
     }
 
     companion object {
-        const val LOG_TAG = "usbserial"
         const val ACTION_USB_PERMISSION = "cn.genee.rn.serialport.action.USB_PERMISSION"
 
         private const val MAX_BUFFER_SIZE = 16 * 4096

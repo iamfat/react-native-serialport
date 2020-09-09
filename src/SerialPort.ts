@@ -1,6 +1,7 @@
 import { NativeModules, NativeEventEmitter, EmitterSubscription } from 'react-native';
 
 const { RNSerialPort } = NativeModules;
+const emitter = new NativeEventEmitter(RNSerialPort);
 
 type SerialPortEvent = 'open' | 'close' | 'error' | 'data';
 
@@ -11,13 +12,12 @@ export default class SerialPort {
     private nativeSubscription: EmitterSubscription;
 
     constructor(deviceId: string, baudRate: number) {
-        const emitter = new NativeEventEmitter(RNSerialPort);
-        this.nativeSubscription = emitter.addListener(
-            `SerialPort.event@${deviceId}`,
-            (event: SerialPortEvent, ...args) => {
-                (this.eventListeners[event] || []).map((f) => f(...args));
-            },
-        );
+        this.nativeSubscription = emitter.addListener(`SerialPort.event@${deviceId}`, ({ event, params }) => {
+            if (event === 'data' && Array.isArray(params[0])) {
+                params[0] = new Uint8Array(params[0]).buffer;
+            }
+            (this.eventListeners[event] || []).map((f) => f(...(params || [])));
+        });
         this.deviceId = deviceId;
         this.baudRate = baudRate;
         this.open();
@@ -28,18 +28,15 @@ export default class SerialPort {
     }
 
     close() {
-        return RNSerialPort.closePort(this.deviceId);
-    }
-
-    open() {
-        RNSerialPort.openPort(this.deviceId, this.baudRate);
-    }
-
-    destroy() {
+        RNSerialPort.closePort(this.deviceId);
         if (this.nativeSubscription) {
             this.nativeSubscription.remove();
             this.nativeSubscription = undefined;
         }
+    }
+
+    open() {
+        RNSerialPort.openPort(this.deviceId, this.baudRate);
     }
 
     on(event: SerialPortEvent, cb: Function) {
@@ -52,4 +49,5 @@ export default class SerialPort {
         this.eventListeners[event] = (this.eventListeners[event] || []).filter((f) => f !== cb);
         return this;
     }
+
 }

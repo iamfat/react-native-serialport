@@ -8,6 +8,6 @@ export default [
             dir: './dist',
         },
         plugins: [typescript({ declaration: true, declarationDir: 'dist' })],
-        external: ['react-native'],
+        external: ['react-native', 'js-base64'],
     },
 ];

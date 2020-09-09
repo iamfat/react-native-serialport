@@ -42,7 +42,7 @@ open class SerialPort(protected val context: Context, protected val baudRate: In
 
     override fun run() {
         this.status = Status.READY
-        Log.d(LOG_TAG, "SerialPort thread started")
+        Log.d(RNSerialPort.LOG_TAG, "SerialPort thread started")
 
         openDriver()
 
@@ -58,7 +58,7 @@ open class SerialPort(protected val context: Context, protected val baudRate: In
         closeDriver()
         this.status = Status.CLOSED
         onClose()
-        Log.d(LOG_TAG, "SerialPort thread stopped")
+        Log.d(RNSerialPort.LOG_TAG, "SerialPort thread stopped")
         onClose()
     }
 
@@ -66,11 +66,6 @@ open class SerialPort(protected val context: Context, protected val baudRate: In
     open fun onData(data: ByteArray) {}
     open fun onError(error: Exception) {}
     open fun onClose() {}
-
-    companion object {
-        private const val LOG_TAG = "serialport:common"
-    }
-
 }
 
 

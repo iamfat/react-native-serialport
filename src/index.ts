@@ -1,7 +1,5 @@
-import SerialPort from "./SerialPort";
+import SerialPort from './SerialPort';
 
-export default { 
-    openPort(deviceId: string, baudRate: number = 9600) {
-        return new SerialPort(deviceId, baudRate);
-    }
- };
+const openPort = (deviceId: string, baudRate: number = 9600) => new SerialPort(deviceId, baudRate);
+export default { openPort, SerialPort };
+export { openPort, SerialPort };

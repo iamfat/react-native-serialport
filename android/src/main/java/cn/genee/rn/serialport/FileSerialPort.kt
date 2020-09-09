@@ -19,7 +19,7 @@ open class FileSerialPort(
         if (file.exists()) {
             fileDriver = android.serialport.SerialPort(file, baudRate, 0)
         } else {
-            Log.d(LOG_TAG, "$filePath not found")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).init: $filePath not found")
         }
     }
 
@@ -29,12 +29,12 @@ open class FileSerialPort(
             try {
                 val file = File(filePath)
                 if (file.exists()) {
-                    Log.d(LOG_TAG, "found regular device $filePath")
+                    Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openDriver: found regular device")
                     fileDriver = android.serialport.SerialPort(file, baudRate, 0)
                 }
             } catch (e: Exception) {
                 onError(e)
-                Log.e(LOG_TAG, "SerialPort openDriver: ${e.message}")
+                Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openDriver: ${e.message}")
             }
 
             if (fileDriver == null) {
@@ -51,7 +51,7 @@ open class FileSerialPort(
         try {
             fileDriver?.close()
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "SerialPort.file($filePath) closeDriver: ${e.message}")
+            Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).closeDriver: ${e.message}")
         } finally {
             fileDriver = null
         }
@@ -63,9 +63,9 @@ open class FileSerialPort(
                 write(data)
                 flush()
             }
-            Log.d(LOG_TAG, "SerialPort.file($filePath).write: ${data.toHexString()}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).write: ${data.toHexString()}")
         } catch (e: Exception) {
-            Log.d(LOG_TAG, "SerialPort.file($filePath).write: error=${e.message}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).write: error=${e.message}")
             closeDriver()
         }
     }
@@ -77,7 +77,7 @@ open class FileSerialPort(
             val length = inputStream.read(readBuffer.array())
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
-            Log.d(LOG_TAG, "SerialPort.file($filePath).read: ${data.toHexString()}")
+            Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
          } else {
@@ -86,7 +86,6 @@ open class FileSerialPort(
     }
 
     companion object {
-        private const val LOG_TAG = "serialport:file"
         private const val MAX_BUFFER_SIZE = 16 * 4096
 
         init {
