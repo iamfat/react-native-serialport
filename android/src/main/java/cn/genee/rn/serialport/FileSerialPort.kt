@@ -8,59 +8,59 @@ import java.io.File
 import java.nio.ByteBuffer
 
 open class FileSerialPort(
-    applicationContext: Context,
-    private val filePath: String,
-    baudRate: Int
+        applicationContext: Context,
+        private val filePath: String,
+        baudRate: Int
 ) : SerialPort(applicationContext, baudRate) {
-    private var fileDriver: android.serialport.SerialPort? = null
+    private var filePort: android.serialport.SerialPort? = null
 
     init {
         val file = File(filePath)
         if (file.exists()) {
-            fileDriver = android.serialport.SerialPort(file, baudRate, 0)
+            filePort = android.serialport.SerialPort(file, baudRate)
         } else {
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).init: $filePath not found")
         }
     }
 
-    override fun openDriver(): Boolean {
+    override fun openPort(): Boolean {
         var tryCount = 0
-        while (status != Status.CLOSING && fileDriver == null) {
+        while (status != Status.CLOSING && filePort == null) {
             try {
                 val file = File(filePath)
                 if (file.exists()) {
-                    Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openDriver: found regular device")
-                    fileDriver = android.serialport.SerialPort(file, baudRate, 0)
+                    Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openPort: found regular device")
+                    filePort = android.serialport.SerialPort(file, baudRate)
                 }
             } catch (e: Exception) {
                 onError(e)
-                Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openDriver: ${e.message}")
+                Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).openPort: ${e.message}")
             }
 
-            if (fileDriver == null) {
+            if (filePort == null) {
                 tryCount++
                 if (tryCount == 5) {
-                    onError(java.lang.Exception("串口打开失败"))
+                    onError(java.lang.Exception("failure on openPort"))
                 }
                 SystemClock.sleep(10)
             }
         }
-        return fileDriver !== null
+        return filePort !== null
     }
 
-    override fun closeDriver() {
+    override fun closePort() {
         try {
-            fileDriver?.close()
+            filePort?.close()
         } catch (e: Exception) {
-            Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).closeDriver: ${e.message}")
+            Log.e(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).closePort: ${e.message}")
         } finally {
-            fileDriver = null
+            filePort = null
         }
     }
 
     override fun write(data: ByteArray): Int {
         try {
-            fileDriver?.outputStream?.apply {
+            filePort?.outputStream?.apply {
                 write(data)
                 flush()
             }
@@ -74,7 +74,7 @@ open class FileSerialPort(
 
     private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)!!
     override fun reading() {
-        val inputStream = fileDriver?.inputStream
+        val inputStream = filePort?.inputStream
         if (inputStream !== null && inputStream.available() > 0) {
             val length = inputStream.read(readBuffer.array())
             val data = ByteArray(length)
@@ -82,9 +82,9 @@ open class FileSerialPort(
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
-         } else {
+        } else {
             SystemClock.sleep(5)
-         }
+        }
     }
 
     companion object {

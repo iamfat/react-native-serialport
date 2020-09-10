@@ -9,61 +9,55 @@ import android.os.SystemClock
 import android.util.Log
 import cn.genee.util.toHexString
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
-import com.hoho.android.usbserial.driver.UsbSerialDriver
+import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import java.nio.ByteBuffer
-import java.util.concurrent.Executors
 
-open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate:Int) : SerialPort(context, baudRate) {
+open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRate: Int) : SerialPort(context, baudRate) {
 
     // USB specific
-    private var usbDriver: UsbSerialDriver? = null
+    private var usbPort: UsbSerialPort? = null
 
-    override fun openDriver(): Boolean {
+    override fun openPort(): Boolean {
         var tryCount = 0
-        while (status != Status.CLOSING && usbDriver == null) {
+        while (status != Status.CLOSING && usbPort == null) {
             val manager = getUSBManager()
             for (device in manager.deviceList.values) {
                 if (device.deviceId == usbDeviceId) {
-                    Log.d(RNSerialPort.LOG_TAG, "found USB device $usbDeviceId")
-                    probeUSBDevice(manager, device)?.let {
-                        if (it.size > 0) {
-                            it[0].apply {
-                                Log.d(RNSerialPort.LOG_TAG, "found usbDriver $this")
-                                setParameters(baudRate, 8, 1, 0)
-                                open()
-                                usbDriver = this
-                            }
-                        }
+                    Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($usbDeviceId).openPort: found device")
+                    usbPort = getUSBPort(manager, device)?.apply {
+                        Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($usbDeviceId).openPort: got port")
+                        val connection = manager.openDevice(device)
+                        open(connection)
+                        setParameters(baudRate, 8, 1, 0)
                     }
-
                     break
                 }
             }
-            if (usbDriver == null) {
+            if (usbPort == null) {
                 tryCount++
                 if (tryCount == 5) {
-                    onError(java.lang.Exception("串口打开失败"))
+                    onError(java.lang.Exception("failure on openPort"))
                 }
                 SystemClock.sleep(10)
             }
         }
-        return usbDriver !== null
+        return usbPort !== null
     }
 
-    override fun closeDriver() {
+    override fun closePort() {
         try {
-            usbDriver?.close()
+            usbPort?.close()
         } catch (e: Exception) {
-            Log.e(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).closeDriver: ${e.message}")
+            Log.e(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).closePort: ${e.message}")
         } finally {
-            usbDriver = null
+            usbPort = null
         }
     }
 
     override fun write(data: ByteArray): Int {
         try {
-            usbDriver?.write(data, READ_WAIT_MILLIS)
+            usbPort?.write(data, READ_WAIT_MILLIS)
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
             return data.size
         } catch (e: Exception) {
@@ -74,7 +68,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
 
     private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)!!
     override fun reading() {
-        val length = usbDriver?.read(readBuffer.array(), READ_WAIT_MILLIS)
+        val length = usbPort?.read(readBuffer.array(), READ_WAIT_MILLIS)
         if (length !== null && length > 0) {
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
@@ -86,7 +80,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
         }
     }
 
-    fun probeUSBDevice(usbManager: UsbManager, usbDevice: UsbDevice): List<UsbSerialDriver>? {
+    fun getUSBPort(usbManager: UsbManager, usbDevice: UsbDevice): UsbSerialPort? {
         if (!usbManager.hasPermission(usbDevice)) {
             Log.d(RNSerialPort.LOG_TAG, "usbManager.hasNoPermission $usbDevice")
             val intent = PendingIntent.getBroadcast(
@@ -97,23 +91,11 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
             return null
         }
         Log.d(RNSerialPort.LOG_TAG, "usbManager.hasPermission $usbDevice")
-        val drivers = UsbSerialProber.probeSingleDevice(usbManager, usbDevice)
-        if (drivers != null && drivers.size > 0) return drivers
+
+        val driver = UsbSerialProber.getDefaultProber().probeDevice(usbDevice)
+        if (driver != null) return driver.ports[0]
 
         val supportedDevices = mapOf(
-                // 0x0403 / 0x6001: FTDI FT232R UART
-                // 0x0403 / 0x6015: FTDI FT231X
-                0x0403 to listOf(0x6001, 0x6015),
-                // 0x2341 / Arduino
-                // 0x2341 to listOf(),
-                // 0x16C0 / 0x0483: Teensyduino
-                0x16C0 to listOf(0x0483),
-                // 0x10C4 / 0xEA60: CP210x UART Bridge
-                0x10C4 to listOf(0xEA60),
-                // 0x067B / 0x2303: Prolific PL2303
-                0x067B to listOf(0x2303),
-                // 0x1A86 / 0x7523: Qinheng CH340
-                0x1A86 to listOf(0x7523),
                 //  G-AQ 2.0
                 0x0483 to listOf(0x5740)
         )
@@ -122,8 +104,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
             return null
         }
 
-        val connection = usbManager.openDevice(usbDevice)
-        return listOf<UsbSerialDriver>(CdcAcmSerialDriver(usbDevice, connection))
+        return CdcAcmSerialDriver(usbDevice).ports[0]
     }
 
     fun getUSBManager(): UsbManager {
