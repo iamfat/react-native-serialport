@@ -34,41 +34,34 @@ open class SerialPort(protected val context: Context, protected val baudRate: In
         }
     }
 
-    open fun write(data: ByteArray) {}
+    open fun write(data: ByteArray): Int { return 0 }
 
     open fun reading() {}
-    open fun openDriver() {}
+    open fun openDriver(): Boolean { return false }
     open fun closeDriver() {}
 
     override fun run() {
         this.status = Status.READY
         Log.d(RNSerialPort.LOG_TAG, "SerialPort thread started")
-
-        openDriver()
-
-        while (status !== Status.CLOSING) {
-            try {
-                reading()
-            } catch (e: Exception) {
-                onError(e)
-                break
+        if (openDriver()) {
+            onOpen()
+            while (status !== Status.CLOSING) {
+                try {
+                    reading()
+                } catch (e: Exception) {
+                    onError(e)
+                    break
+                }
             }
+            closeDriver()
+            onClose()
         }
-
-        closeDriver()
         this.status = Status.CLOSED
-        onClose()
         Log.d(RNSerialPort.LOG_TAG, "SerialPort thread stopped")
-        onClose()
     }
 
-    open fun onConnect() {}
+    open fun onOpen() {}
     open fun onData(data: ByteArray) {}
     open fun onError(error: Exception) {}
     open fun onClose() {}
 }
-
-
-
-
-

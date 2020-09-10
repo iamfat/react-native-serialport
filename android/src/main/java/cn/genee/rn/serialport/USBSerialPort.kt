@@ -19,7 +19,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
     // USB specific
     private var usbDriver: UsbSerialDriver? = null
 
-    override fun openDriver() {
+    override fun openDriver(): Boolean {
         var tryCount = 0
         while (status != Status.CLOSING && usbDriver == null) {
             val manager = getUSBManager()
@@ -48,6 +48,7 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
                 SystemClock.sleep(10)
             }
         }
+        return usbDriver !== null
     }
 
     override fun closeDriver() {
@@ -60,13 +61,14 @@ open class USBSerialPort(context:Context, private var usbDeviceId: Int, baudRate
         }
     }
 
-    override fun write(data: ByteArray) {
+    override fun write(data: ByteArray): Int {
         try {
             usbDriver?.write(data, READ_WAIT_MILLIS)
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
+            return data.size
         } catch (e: Exception) {
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: error=${e.message}")
-            closeDriver()
+            return -1
         }
     }
 

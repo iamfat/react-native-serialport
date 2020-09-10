@@ -23,7 +23,7 @@ open class FileSerialPort(
         }
     }
 
-    override fun openDriver() {
+    override fun openDriver(): Boolean {
         var tryCount = 0
         while (status != Status.CLOSING && fileDriver == null) {
             try {
@@ -45,6 +45,7 @@ open class FileSerialPort(
                 SystemClock.sleep(10)
             }
         }
+        return fileDriver !== null
     }
 
     override fun closeDriver() {
@@ -57,16 +58,17 @@ open class FileSerialPort(
         }
     }
 
-    override fun write(data: ByteArray) {
+    override fun write(data: ByteArray): Int {
         try {
             fileDriver?.outputStream?.apply {
                 write(data)
                 flush()
             }
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).write: ${data.toHexString()}")
+            return data.size
         } catch (e: Exception) {
             Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($filePath).write: error=${e.message}")
-            closeDriver()
+            return -1
         }
     }
 

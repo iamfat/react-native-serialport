@@ -65,6 +65,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
                             val params = WritableNativeMap()
                             params.putString("event", "close")
                             sendEvent(deviceId, params)
+                            ports.remove(deviceId)
                         }
                     }.apply {
                         executor.execute(this)
@@ -90,6 +91,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
                             val params = WritableNativeMap()
                             params.putString("event", "close")
                             sendEvent(deviceId, params)
+                            ports.remove(deviceId)
                         }
                     }.apply {
                         executor.execute(this)
@@ -105,18 +107,19 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
     fun closePort(deviceId: String) {
         Log.d(LOG_TAG, "closePort deviceId=$deviceId")
         ports[deviceId]?.close()
-        ports.remove(deviceId)
     }
 
     @ReactMethod
-    fun writePort(deviceId: String, bytes: Array<Int>, promise: Promise?) {
+    fun writePort(deviceId: String, bytes: Array<Int>, promise: Promise) {
         Log.d(LOG_TAG, "writePort deviceId=$deviceId size=${bytes.size}")
         val port = ports[deviceId]
         if (port !== null) {
             Thread {
                 port.write(bytes.map { it.toByte() }.toByteArray())
-                promise?.resolve(null)
+                promise.resolve(bytes.size)
             }.start()
+        } else {
+            promise.resolve(-1)
         }
     }
 
