@@ -24,7 +24,7 @@ export default class SerialPort {
     }
 
     write(chunk: ArrayBuffer): Promise<number> {
-        return RNSerialPort.writePort(this.deviceId, new Uint8Array(chunk));
+        return RNSerialPort.writePort(this.deviceId, Array.from(new Uint8Array(chunk)));
     }
 
     close() {

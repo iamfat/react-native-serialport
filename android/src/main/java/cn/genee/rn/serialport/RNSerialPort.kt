@@ -110,12 +110,15 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
     }
 
     @ReactMethod
-    fun writePort(deviceId: String, bytes: Array<Int>, promise: Promise) {
+    fun writePort(deviceId: String, bytesArray: ReadableArray, promise: Promise) {
+        val bytes = ByteArray(bytesArray.size()) {
+            bytesArray.getInt(it).toByte()
+        }
         Log.d(LOG_TAG, "writePort deviceId=$deviceId size=${bytes.size}")
         val port = ports[deviceId]
         if (port !== null) {
             Thread {
-                port.write(bytes.map { it.toByte() }.toByteArray())
+                port.write(bytes)
                 promise.resolve(bytes.size)
             }.start()
         } else {
