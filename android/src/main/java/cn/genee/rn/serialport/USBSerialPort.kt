@@ -96,8 +96,10 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
         if (driver != null) return driver.ports[0]
 
         val supportedDevices = mapOf(
-                //  G-AQ 2.0
+                // G-AQ 2.0
                 0x0483 to listOf(0x5740)
+                // G-Reader
+                0x0403 to listOf(0x8288)
         )
 
         if (!testIfUSBSupported(usbDevice, supportedDevices)) {
