@@ -2,6 +2,7 @@ package cn.genee.rn.serialport
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Handler
 import android.util.Log
 
 import com.facebook.react.bridge.*
@@ -12,6 +13,8 @@ import java.net.URI
 import java.util.concurrent.Executors
 
 class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), ActivityEventListener {
+
+    private val uiHandler = Handler()
 
     init {
         reactContext.addActivityEventListener(this)
@@ -27,12 +30,14 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
             deviceId: String,
             params: WritableMap
     ) {
-        try {
-            reactApplicationContext
-                    .getJSModule(RCTNativeAppEventEmitter::class.java)
-                    .emit("SerialPort.event@$deviceId", params)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        uiHandler.post {
+            try {
+                reactApplicationContext
+                        .getJSModule(RCTNativeAppEventEmitter::class.java)
+                        .emit("SerialPort.event@$deviceId", params)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
