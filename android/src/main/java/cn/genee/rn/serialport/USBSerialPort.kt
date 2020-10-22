@@ -97,7 +97,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
 
         val supportedDevices = mapOf(
                 // G-AQ 2.0
-                0x0483 to listOf(0x5740)
+                0x0483 to listOf(0x5740),
                 // G-Reader
                 0x0403 to listOf(0x8288)
         )
