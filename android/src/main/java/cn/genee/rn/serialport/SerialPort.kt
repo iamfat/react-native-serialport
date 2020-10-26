@@ -18,11 +18,11 @@ import java.util.concurrent.Executors
 import cn.genee.util.toHexString
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
 
-open class SerialPort(protected val context: Context, protected val baudRate: Int) : Runnable {
+open class SerialPort(protected val context: Context, val baudRate: Int) : Runnable {
     protected var status = Status.READY
 
     enum class Status {
-        OPENNING,
+        OPENING,
         READY,
         CLOSING,
         CLOSED
