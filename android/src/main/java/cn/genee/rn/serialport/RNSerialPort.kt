@@ -1,9 +1,8 @@
 package cn.genee.rn.serialport
 
-import android.util.Log
-
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.util.RNLog
 
 import java.net.URI
 import java.util.concurrent.Executors
@@ -30,7 +29,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
     override fun getName() = "RNSerialPort"
 
     override fun onHostDestroy() {
-        Log.d(LOG_TAG, "onHostDestroy: close all opening ports")
+        RNLog.t("onHostDestroy: close all opening ports")
         ports.forEach { (_, port) ->
             port.close()
         }
@@ -48,11 +47,11 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun openPort(deviceId: String, baudRate: Int) {
         if (!ports.containsKey(deviceId)) {
-            Log.d(LOG_TAG, "openPort deviceId=$deviceId baudRate=$baudRate")
+            RNLog.t("openPort deviceId=$deviceId baudRate=$baudRate")
             val uri = URI(deviceId)
             when (uri.scheme) {
                 "file" -> {
-                    Log.d(LOG_TAG, "openFilePort path=${uri.path}")
+                    RNLog.t("openFilePort path=${uri.path}")
                     ports[deviceId] = object : FileSerialPort(reactApplicationContext, uri.path, baudRate) {
                         override fun onData(data: ByteArray) {
                             val params = WritableNativeMap()
@@ -78,7 +77,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
                     }
                 }
                 "usb" -> {
-                    Log.d(LOG_TAG, "openUSBPort id=${uri.path}")
+                    RNLog.t("openUSBPort id=${uri.path}")
                     ports[deviceId] = object : USBSerialPort(reactApplicationContext, uri.path.toInt(), baudRate) {
                         override fun onData(data: ByteArray) {
                             val params = WritableNativeMap()
@@ -109,7 +108,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
 
     @ReactMethod
     fun closePort(deviceId: String) {
-        Log.d(LOG_TAG, "closePort deviceId=$deviceId")
+        RNLog.t("closePort deviceId=$deviceId")
         if (ports.containsKey(deviceId)) {
             ports[deviceId]?.close()
             ports.remove(deviceId)
@@ -127,7 +126,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
         val port = ports[deviceId]
         if (port !== null) {
             executor.execute {
-                Log.d(LOG_TAG, "writePort deviceId=$deviceId size=${bytes.size}")
+                RNLog.t("writePort deviceId=$deviceId size=${bytes.size}")
                 port.write(bytes)
                 promise.resolve(bytes.size)
             }
@@ -137,8 +136,6 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
     }
 
     companion object {
-        const val LOG_TAG = "serialport"
-
         private val ports = HashMap<String, SerialPort>()
         private val executor = Executors.newCachedThreadPool()
     }

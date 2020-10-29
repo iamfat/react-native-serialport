@@ -6,7 +6,9 @@ import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.SystemClock
-import android.util.Log
+
+import com.facebook.react.util.RNLog
+
 import cn.genee.util.toHexString
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialPort
@@ -24,9 +26,9 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
             val manager = getUSBManager()
             for (device in manager.deviceList.values) {
                 if (device.deviceId == usbDeviceId) {
-                    Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($usbDeviceId).openPort: found device")
+                    RNLog.t("SerialPort.file($usbDeviceId).openPort: found device")
                     usbPort = getUSBPort(manager, device)?.apply {
-                        Log.d(RNSerialPort.LOG_TAG, "SerialPort.file($usbDeviceId).openPort: got port")
+                        RNLog.t("SerialPort.file($usbDeviceId).openPort: got port")
                         val connection = manager.openDevice(device)
                         open(connection)
                         setParameters(baudRate, 8, 1, 0)
@@ -49,7 +51,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
         try {
             usbPort?.close()
         } catch (e: Exception) {
-            Log.e(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).closePort: ${e.message}")
+            RNLog.e("SerialPort.usb($usbDeviceId).closePort: ${e.message}")
         } finally {
             usbPort = null
         }
@@ -58,10 +60,10 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
     override fun write(data: ByteArray): Int {
         try {
             usbPort?.write(data, READ_WAIT_MILLIS)
-            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
+            RNLog.t("SerialPort.usb($usbDeviceId).write: ${data.toHexString()}")
             return data.size
         } catch (e: Exception) {
-            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).write: error=${e.message}")
+            RNLog.e("SerialPort.usb($usbDeviceId).write: error=${e.message}")
             return -1
         }
     }
@@ -72,7 +74,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
         if (length !== null && length > 0) {
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
-            Log.d(RNSerialPort.LOG_TAG, "SerialPort.usb($usbDeviceId).read: ${data.toHexString()}")
+            RNLog.t("SerialPort.usb($usbDeviceId).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
         } else {
@@ -82,7 +84,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
 
     fun getUSBPort(usbManager: UsbManager, usbDevice: UsbDevice): UsbSerialPort? {
         if (!usbManager.hasPermission(usbDevice)) {
-            Log.d(RNSerialPort.LOG_TAG, "usbManager.hasNoPermission $usbDevice")
+            RNLog.t("usbManager.hasNoPermission $usbDevice")
             val intent = PendingIntent.getBroadcast(
                     context, 0,
                     Intent(ACTION_USB_PERMISSION), 0
@@ -90,7 +92,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
             usbManager.requestPermission(usbDevice, intent)
             return null
         }
-        Log.d(RNSerialPort.LOG_TAG, "usbManager.hasPermission $usbDevice")
+        RNLog.t("usbManager.hasPermission $usbDevice")
 
         val driver = UsbSerialProber.getDefaultProber().probeDevice(usbDevice)
         if (driver != null) return driver.ports[0]

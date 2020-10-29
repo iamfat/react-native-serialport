@@ -6,7 +6,8 @@ import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.SystemClock
-import android.util.Log
+
+import com.facebook.react.util.RNLog
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialProber
@@ -42,7 +43,7 @@ open class SerialPort(protected val context: Context, val baudRate: Int) : Runna
 
     override fun run() {
         this.status = Status.READY
-        Log.d(RNSerialPort.LOG_TAG, "SerialPort thread started")
+        RNLog.t("SerialPort thread started")
         if (openPort()) {
             onOpen()
             while (status !== Status.CLOSING) {
@@ -57,7 +58,7 @@ open class SerialPort(protected val context: Context, val baudRate: Int) : Runna
             onClose()
         }
         this.status = Status.CLOSED
-        Log.d(RNSerialPort.LOG_TAG, "SerialPort thread stopped")
+        RNLog.t("SerialPort thread stopped")
     }
 
     open fun onOpen() {}
