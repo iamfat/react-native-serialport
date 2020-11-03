@@ -5,7 +5,6 @@ import android.os.SystemClock
 import cn.genee.util.toHexString
 import java.io.File
 import java.nio.ByteBuffer
-import com.facebook.react.util.RNLog
 
 open class FileSerialPort(
         applicationContext: Context,
@@ -19,7 +18,7 @@ open class FileSerialPort(
         if (file.exists()) {
             filePort = android.serialport.SerialPort(file, baudRate)
         } else {
-            RNLog.t("SerialPort.file($filePath).init: $filePath not found")
+            RNLog.d("SerialPort.file($filePath).init: $filePath not found")
         }
     }
 
@@ -29,7 +28,7 @@ open class FileSerialPort(
             try {
                 val file = File(filePath)
                 if (file.exists()) {
-                    RNLog.t("SerialPort.file($filePath).openPort: found regular device")
+                    RNLog.d("SerialPort.file($filePath).openPort: found regular device")
                     filePort = android.serialport.SerialPort(file, baudRate)
                 }
             } catch (e: Exception) {
@@ -64,7 +63,7 @@ open class FileSerialPort(
                 write(data)
                 flush()
             }
-            RNLog.t("SerialPort.file($filePath).write: ${data.toHexString()}")
+            RNLog.d("SerialPort.file($filePath).write: ${data.toHexString()}")
             return data.size
         } catch (e: Exception) {
             RNLog.e("SerialPort.file($filePath).write: error=${e.message}")
@@ -79,7 +78,7 @@ open class FileSerialPort(
             val length = inputStream.read(readBuffer.array())
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
-            RNLog.t("SerialPort.file($filePath).read: ${data.toHexString()}")
+            RNLog.d("SerialPort.file($filePath).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
         } else {

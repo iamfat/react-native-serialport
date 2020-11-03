@@ -2,56 +2,42 @@ package cn.genee.rn.serialport
 
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.facebook.react.util.RNLog
 
 import java.net.URI
 import java.util.concurrent.Executors
 
-class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
-
-    init {
-        reactContext.addLifecycleEventListener(this)
-    }
+class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
     private fun sendEvent(
             deviceId: String,
             params: WritableMap
     ) {
-        try {
+        if (reactApplicationContext.hasActiveCatalystInstance()) {
             reactApplicationContext
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                     .emit("SerialPort.event@$deviceId", params)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
     override fun getName() = "RNSerialPort"
 
-    override fun onHostDestroy() {
-        RNLog.t("onHostDestroy: close all opening ports")
+    override fun onCatalystInstanceDestroy() {
+        RNLog.d("onCatalystInstanceDestroy: close all opening ports")
         ports.forEach { (_, port) ->
             port.close()
         }
         ports.clear()
-    }
-
-    override fun onHostPause() {
-        // TODO("Not yet implemented")
-    }
-
-    override fun onHostResume() {
-        // TODO("Not yet implemented")
+        super.onCatalystInstanceDestroy()
     }
 
     @ReactMethod
     fun openPort(deviceId: String, baudRate: Int) {
         if (!ports.containsKey(deviceId)) {
-            RNLog.t("openPort deviceId=$deviceId baudRate=$baudRate")
+            RNLog.d("openPort deviceId=$deviceId baudRate=$baudRate")
             val uri = URI(deviceId)
             when (uri.scheme) {
                 "file" -> {
-                    RNLog.t("openFilePort path=${uri.path}")
+                    RNLog.d("openFilePort path=${uri.path}")
                     ports[deviceId] = object : FileSerialPort(reactApplicationContext, uri.path, baudRate) {
                         override fun onData(data: ByteArray) {
                             val params = WritableNativeMap()
@@ -77,7 +63,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
                     }
                 }
                 "usb" -> {
-                    RNLog.t("openUSBPort id=${uri.path}")
+                    RNLog.d("openUSBPort id=${uri.path}")
                     ports[deviceId] = object : USBSerialPort(reactApplicationContext, uri.path.toInt(), baudRate) {
                         override fun onData(data: ByteArray) {
                             val params = WritableNativeMap()
@@ -108,7 +94,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
 
     @ReactMethod
     fun closePort(deviceId: String) {
-        RNLog.t("closePort deviceId=$deviceId")
+        RNLog.d("closePort deviceId=$deviceId")
         if (ports.containsKey(deviceId)) {
             ports[deviceId]?.close()
             ports.remove(deviceId)
@@ -126,7 +112,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
         val port = ports[deviceId]
         if (port !== null) {
             executor.execute {
-                RNLog.t("writePort deviceId=$deviceId size=${bytes.size}")
+                RNLog.d("writePort deviceId=$deviceId size=${bytes.size}")
                 port.write(bytes)
                 promise.resolve(bytes.size)
             }
