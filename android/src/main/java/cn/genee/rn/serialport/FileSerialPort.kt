@@ -73,16 +73,13 @@ open class FileSerialPort(
 
     private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)!!
     override fun reading() {
-        val inputStream = filePort?.inputStream
-        if (inputStream !== null && inputStream.available() > 0) {
-            val length = inputStream.read(readBuffer.array())
+        filePort?.inputStream?.let { 
+            val length = it.read(readBuffer.array())
             val data = ByteArray(length)
             readBuffer.get(data, 0, length)
             RNLog.d("SerialPort.file($filePath).read: ${data.toHexString()}")
             onData(data)
             readBuffer.clear()
-        } else {
-            SystemClock.sleep(5)
         }
     }
 
