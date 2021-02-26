@@ -2,7 +2,6 @@ package cn.genee.rn.serialport
 
 import android.content.Context
 import android.os.SystemClock
-import cn.genee.util.toHexString
 import java.io.File
 import java.nio.ByteBuffer
 

@@ -14,7 +14,6 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
-import cn.genee.util.toHexString
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
 
 open class SerialPort(protected val context: Context, val baudRate: Int) : Runnable {
