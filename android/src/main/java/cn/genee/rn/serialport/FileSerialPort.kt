@@ -14,9 +14,7 @@ open class FileSerialPort(
 
     init {
         val file = File(filePath)
-        if (file.exists()) {
-            filePort = android.serialport.SerialPort(file, baudRate)
-        } else {
+        if (!file.exists()) {
             RNLog.d("SerialPort.file($filePath).init: $filePath not found")
         }
     }
@@ -26,11 +24,13 @@ open class FileSerialPort(
         while (status != Status.CLOSING && filePort == null) {
             try {
                 val file = File(filePath)
-                if (file.exists()) {
-                    RNLog.d("SerialPort.file($filePath).openPort: found regular device")
-                    filePort = android.serialport.SerialPort(file, baudRate)
+                if (!file.exists()) {
+                    break
                 }
+                RNLog.d("SerialPort.file($filePath).openPort: found regular device")
+                filePort = android.serialport.SerialPort(file, baudRate)
             } catch (e: Exception) {
+                filePort = null
                 onError(e)
                 RNLog.e("SerialPort.file($filePath).openPort: ${e.message}")
             }
