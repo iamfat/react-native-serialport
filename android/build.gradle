@@ -62,6 +62,6 @@ repositories {
 dependencies {
     implementation 'com.facebook.react:react-native:+'  // From node_modules
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    implementation 'com.licheedev:android-serialport:2.1.1'
-    implementation 'com.github.mik3y:usb-serial-for-android:3.0.1'
+    implementation 'com.licheedev:android-serialport:2.1.2'
+    implementation 'com.github.mik3y:usb-serial-for-android:3.3.1'
 }
