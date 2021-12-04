@@ -2,3 +2,6 @@
 /node_modules
 /rollup.config.js
 /tsconfig.json
+/android/build
+/android/.gradle
+.idea
