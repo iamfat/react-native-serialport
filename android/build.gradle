@@ -9,18 +9,9 @@ buildscript {
   // The Android Gradle plugin is only required when opening the android folder stand-alone.
   // This avoids unnecessary downloads and potential conflicts when the library is included as a
   // module dependency in an application project.
-  if (project == rootProject) {
+  if (project != rootProject) {
     repositories {
       google()
-      mavenCentral()
-    }
-
-    dependencies {
-      classpath("com.android.tools.build:gradle:3.6.0")
-      classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    }
-  } else {
-    repositories {
       mavenCentral()
     }
 

@@ -12,7 +12,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
             deviceId: String,
             params: WritableMap
     ) {
-        if (reactApplicationContext.hasActiveCatalystInstance()) {
+        if (reactApplicationContext.hasCatalystInstance()) {
             reactApplicationContext
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                     .emit("SerialPort.event@$deviceId", params)
@@ -21,13 +21,13 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
 
     override fun getName() = "RNSerialPort"
 
-    override fun onCatalystInstanceDestroy() {
+    override fun invalidate() {
         RNLog.d("onCatalystInstanceDestroy: close all opening ports")
         ports.forEach { (_, port) ->
             port.close()
         }
         ports.clear()
-        super.onCatalystInstanceDestroy()
+        super.invalidate()
     }
 
     @ReactMethod
