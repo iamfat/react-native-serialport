@@ -12,7 +12,7 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
             deviceId: String,
             params: WritableMap
     ) {
-        if (reactApplicationContext.hasCatalystInstance()) {
+        if (reactApplicationContext.hasActiveReactInstance()) {
             reactApplicationContext
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                     .emit("SerialPort.event@$deviceId", params)
