@@ -65,7 +65,7 @@ open class USBSerialPort(context: Context, private var usbDeviceId: Int, baudRat
         }
     }
 
-    private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)!!
+    private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)
     override fun reading() {
         val length = usbPort?.read(readBuffer.array(), READ_WAIT_MILLIS)
         if (length !== null && length > 0) {

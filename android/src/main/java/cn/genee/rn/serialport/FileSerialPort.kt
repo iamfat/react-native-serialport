@@ -70,7 +70,7 @@ open class FileSerialPort(
         }
     }
 
-    private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)!!
+    private val readBuffer = ByteBuffer.allocate(MAX_BUFFER_SIZE)
     override fun reading() {
         filePort?.inputStream?.let { 
             val length = it.read(readBuffer.array())

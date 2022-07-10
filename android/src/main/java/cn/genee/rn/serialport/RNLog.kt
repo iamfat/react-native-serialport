@@ -5,11 +5,11 @@ import android.util.Log
 object RNLog {
     const val TAG = "RNSerialPort"
     
-    fun d(message: String?) {
+    fun d(message: String) {
         Log.d(TAG, message)
     }
 
-    fun e(message: String?) {
+    fun e(message: String) {
         Log.e(TAG, message)
     }
 }
