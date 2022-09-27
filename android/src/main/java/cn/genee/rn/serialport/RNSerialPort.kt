@@ -9,13 +9,11 @@ import java.util.concurrent.Executors
 class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
     private fun sendEvent(
-            deviceId: String,
-            params: WritableMap
+        deviceId: String, params: WritableMap
     ) {
         if (reactApplicationContext.hasActiveReactInstance()) {
-            reactApplicationContext
-                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                    .emit("SerialPort.event@$deviceId", params)
+            reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("SerialPort.event@$deviceId", params)
         }
     }
 
@@ -120,6 +118,12 @@ class RNSerialPort(reactContext: ReactApplicationContext) : ReactContextBaseJava
             promise.resolve(-1)
         }
     }
+
+    @ReactMethod
+    fun addListener(eventName: String) { }
+
+    @ReactMethod
+    fun removeListeners(count: Int) { }
 
     companion object {
         private val ports = HashMap<String, SerialPort>()
