@@ -11,6 +11,7 @@ open class FileSerialPort(
         baudRate: Int
 ) : SerialPort(applicationContext, baudRate) {
     private var filePort: android.serialport.SerialPort? = null
+    private var portDisabled = false
 
     init {
         val file = File(filePath)
@@ -20,6 +21,8 @@ open class FileSerialPort(
     }
 
     override fun openPort(): Boolean {
+        if (portsDisabled) return false
+
         var tryCount = 0
         while (!portDisabled && status != Status.CLOSING && filePort == null) {
             try {
@@ -86,13 +89,14 @@ open class FileSerialPort(
     companion object {
         private const val MAX_BUFFER_SIZE = 16 * 4096
         private const val suPath = "/system/xbin/su"
+        private var portsDisabled = false
 
         init {
             val suFile = File(suPath)
             if (suFile.exists()) {
                 android.serialport.SerialPort.setSuPath(suPath)
             } else {
-                portDisabled = true
+                portsDisabled = true
             }
         }
     }
