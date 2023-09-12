@@ -21,7 +21,7 @@ open class FileSerialPort(
 
     override fun openPort(): Boolean {
         var tryCount = 0
-        while (status != Status.CLOSING && filePort == null) {
+        while (!portDisabled && status != Status.CLOSING && filePort == null) {
             try {
                 val file = File(filePath)
                 if (!file.exists()) {
@@ -38,7 +38,8 @@ open class FileSerialPort(
             if (filePort == null) {
                 tryCount++
                 if (tryCount == 5) {
-                    onError(java.lang.Exception("failure on openPort"))
+                    onError(Exception("failure on openPort"))
+                    portDisabled = true
                 }
                 SystemClock.sleep(10)
             }
@@ -84,9 +85,15 @@ open class FileSerialPort(
 
     companion object {
         private const val MAX_BUFFER_SIZE = 16 * 4096
+        private const val suPath = "/system/xbin/su"
 
         init {
-            android.serialport.SerialPort.setSuPath("/system/xbin/su")
+            val suFile = File(suPath)
+            if (suFile.exists()) {
+                android.serialport.SerialPort.setSuPath(suPath)
+            } else {
+                portDisabled = true
+            }
         }
     }
 }

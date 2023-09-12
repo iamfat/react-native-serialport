@@ -1,8 +1,11 @@
 {
   "name": "@genee/react-native-serialport",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "main": "dist/index",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.3",
     "@types/react-native": "^0.63.62",
