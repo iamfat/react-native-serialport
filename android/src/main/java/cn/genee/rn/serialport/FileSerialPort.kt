@@ -11,7 +11,7 @@ open class FileSerialPort(
         baudRate: Int
 ) : SerialPort(applicationContext, baudRate) {
     private var filePort: android.serialport.SerialPort? = null
-    private var portDisabled = false
+    private var disableUntil: Long = 0
 
     init {
         val file = File(filePath)
@@ -24,7 +24,7 @@ open class FileSerialPort(
         if (portsDisabled) return false
 
         var tryCount = 0
-        while (!portDisabled && status != Status.CLOSING && filePort == null) {
+        while (status != Status.CLOSING && filePort == null && disableUntil < SystemClock.currentThreadTimeMillis()) {
             try {
                 val file = File(filePath)
                 if (!file.exists()) {
@@ -40,9 +40,10 @@ open class FileSerialPort(
 
             if (filePort == null) {
                 tryCount++
-                if (tryCount == 5) {
+                if (tryCount == 3) {
                     onError(Exception("failure on openPort"))
-                    portDisabled = true
+                    disableUntil = SystemClock.currentThreadTimeMillis() + 30000 // 30s
+                    break
                 }
                 SystemClock.sleep(10)
             }

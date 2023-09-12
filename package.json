@@ -1,6 +1,6 @@
 {
   "name": "@genee/react-native-serialport",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "main": "dist/index",
   "license": "MIT",
   "publishConfig": {
