@@ -24,7 +24,7 @@ open class FileSerialPort(
         if (portsDisabled) return false
 
         var tryCount = 0
-        while (status != Status.CLOSING && filePort == null && disableUntil < SystemClock.currentThreadTimeMillis()) {
+        while (status != Status.CLOSING && filePort == null && disableUntil < SystemClock.uptimeMillis()) {
             try {
                 val file = File(filePath)
                 if (!file.exists()) {
@@ -42,7 +42,7 @@ open class FileSerialPort(
                 tryCount++
                 if (tryCount == 3) {
                     onError(Exception("failure on openPort"))
-                    disableUntil = SystemClock.currentThreadTimeMillis() + 30000 // 30s
+                    disableUntil = SystemClock.uptimeMillis() + 30000 // 30s
                     break
                 }
                 SystemClock.sleep(10)
